@@ -10,7 +10,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -38,6 +39,10 @@ input {
   background: #2a303a;
   color: #f3f4f6;
   border-radius: 6px;
+}
+
+.toolbar button:disabled {
+  opacity: 0.45;
 }
 
 .brand {
@@ -129,11 +134,21 @@ input {
   color: #cbd5e1;
 }
 
-.component-editor input {
+.component-editor input,
+.component-editor select {
   width: 100%;
   padding: 6px;
   color: #f8fafc;
   background: #111827;
   border: 1px solid #475569;
   border-radius: 5px;
+}
+
+.component-editor .checkbox-field {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.component-editor .checkbox-field input {
+  width: auto;
 }
