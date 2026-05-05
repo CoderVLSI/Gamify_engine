@@ -17,6 +17,8 @@ type EditorStore = {
   project: GamifyProject;
   scene: Scene;
   selectedEntityId: string | null;
+  setProject: (project: GamifyProject) => void;
+  setScene: (scene: Scene) => void;
   selectEntity: (entityId: string | null) => void;
   createEntity: (name?: string) => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
@@ -29,6 +31,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   project: createDefaultProject("Gamify Sample"),
   scene: createDefaultScene("Main"),
   selectedEntityId: "cube",
+  setProject: (project) => set({ project }),
+  setScene: (scene) => set({ scene, selectedEntityId: scene.entities[0]?.id ?? null }),
   selectEntity: (selectedEntityId) => set({ selectedEntityId }),
   createEntity: (name = "Entity") =>
     set((state) => {
