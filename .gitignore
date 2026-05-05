@@ -1,6 +1,7 @@
 /.worktrees/
 node_modules/
 dist/
+dist-types/
 dist-ssr/
 target/
 .vite/
