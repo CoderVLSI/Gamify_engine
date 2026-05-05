@@ -75,11 +75,13 @@ export function updateComponent(scene: Scene, entityId: string, componentId: str
   });
 }
 
-export function setTransform(
-  scene: Scene,
-  entityId: string,
-  patch: Partial<Pick<TransformComponent, "position" | "rotation" | "scale">>
-): Scene {
+export type TransformPatch = {
+  position?: Partial<Vec3>;
+  rotation?: Partial<Vec3>;
+  scale?: Partial<Vec3>;
+};
+
+export function setTransform(scene: Scene, entityId: string, patch: TransformPatch): Scene {
   const entity = scene.entities.find((candidate) => candidate.id === entityId);
   if (!entity) throw new Error(`Entity not found: ${entityId}`);
   const transform = entity.components.find((component): component is TransformComponent => component.type === "Transform") ?? createTransform();
