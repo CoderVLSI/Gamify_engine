@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { startMcpBridge } from "./bridge/mcpBridge";
 import { HierarchyPanel } from "./components/HierarchyPanel";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { ProjectPanel } from "./components/ProjectPanel";
@@ -5,6 +7,8 @@ import { Toolbar } from "./components/Toolbar";
 import { Viewport3D } from "./components/Viewport3D";
 
 export function App() {
+  useEffect(() => startMcpBridge(), []);
+
   return (
     <main className="editor-shell">
       <Toolbar />
