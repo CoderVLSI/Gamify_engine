@@ -1,0 +1,24 @@
+{
+  "name": "gamify-editor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @gamify/editor run dev",
+    "tauri:dev": "npm --workspace @gamify/editor run tauri:dev",
+    "mcp": "npm --workspace @gamify/mcp-server run dev",
+    "build": "npm run build --workspaces",
+    "test": "vitest run",
+    "typecheck": "tsc -b"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6",
+    "vitest": "^4.0.15"
+  }
+}
