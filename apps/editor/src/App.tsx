@@ -2,6 +2,7 @@ import { HierarchyPanel } from "./components/HierarchyPanel";
 import { InspectorPanel } from "./components/InspectorPanel";
 import { ProjectPanel } from "./components/ProjectPanel";
 import { Toolbar } from "./components/Toolbar";
+import { Viewport3D } from "./components/Viewport3D";
 
 export function App() {
   return (
@@ -9,7 +10,7 @@ export function App() {
       <Toolbar />
       <section className="editor-grid">
         <HierarchyPanel />
-        <div className="viewport-placeholder">3D Viewport loads next</div>
+        <Viewport3D />
         <InspectorPanel />
         <ProjectPanel />
       </section>

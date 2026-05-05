@@ -36,6 +36,31 @@ export type MeshRenderer3DComponent = BaseComponent & {
   color: string;
 };
 
+export type Camera3DComponent = BaseComponent & {
+  type: "Camera3D";
+  fov: number;
+  near: number;
+  far: number;
+};
+
+export type Light3DComponent = BaseComponent & {
+  type: "Light3D";
+  kind: "directional" | "ambient" | "point";
+  color: string;
+  intensity: number;
+};
+
+export type SpriteRenderer2DComponent = BaseComponent & {
+  type: "SpriteRenderer2D";
+  assetPath: string;
+  color: string;
+};
+
+export type Camera2DComponent = BaseComponent & {
+  type: "Camera2D";
+  zoom: number;
+};
+
 export type SpriteAnimation2DComponent = BaseComponent & {
   type: "SpriteAnimation2D";
   assetPath: string;
@@ -67,16 +92,17 @@ export type ColliderComponent = BaseComponent & {
   radius?: number;
 };
 
-export type GenericComponent = BaseComponent & Record<string, unknown>;
-
 export type SceneComponent =
   | TransformComponent
   | MeshRenderer3DComponent
+  | Camera3DComponent
+  | Light3DComponent
+  | SpriteRenderer2DComponent
   | SpriteAnimation2DComponent
+  | Camera2DComponent
   | AudioComponent
   | PhysicsBody2DComponent
-  | ColliderComponent
-  | GenericComponent;
+  | ColliderComponent;
 
 export type Entity = {
   id: string;
