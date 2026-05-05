@@ -1,0 +1,7 @@
+/.worktrees/
+node_modules/
+dist/
+dist-ssr/
+target/
+.vite/
+*.log
