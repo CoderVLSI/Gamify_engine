@@ -1,13 +1,15 @@
-import { Box, Disc3, Expand, Move3D, Music, Play, Rotate3D, Save, Sparkles, Volume2 } from "lucide-react";
+import { Box, Circle, Disc3, Expand, Move3D, Music, Play, Rotate3D, Save, Sparkles, Square, Trash2, Volume2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { type TransformTool, useEditorStore } from "../state/editorStore";
 
 export function Toolbar() {
   const createEntity = useEditorStore((state) => state.createEntity);
+  const createPrimitive = useEditorStore((state) => state.createPrimitive);
   const serializeScene = useEditorStore((state) => state.serializeScene);
   const selectedEntityId = useEditorStore((state) => state.selectedEntityId);
   const activeTransformTool = useEditorStore((state) => state.activeTransformTool);
   const setActiveTransformTool = useEditorStore((state) => state.setActiveTransformTool);
+  const deleteSelectedEntity = useEditorStore((state) => state.deleteSelectedEntity);
   const addComponent = useEditorStore((state) => state.addComponent);
 
   function downloadScene() {
@@ -23,8 +25,17 @@ export function Toolbar() {
   return (
     <header className="toolbar">
       <strong className="brand">Gamify Editor</strong>
-      <button title="Add entity" onClick={() => createEntity("Entity")}>
-        <Box size={16} /> Add
+      <button title="Add empty entity" onClick={() => createEntity("Entity")}>
+        <Box size={16} /> Empty
+      </button>
+      <button title="Add cube" onClick={() => createPrimitive("cube")}>
+        <Box size={16} /> Cube
+      </button>
+      <button title="Add sphere" onClick={() => createPrimitive("sphere")}>
+        <Circle size={16} /> Sphere
+      </button>
+      <button title="Add plane" onClick={() => createPrimitive("plane")}>
+        <Square size={16} /> Plane
       </button>
       <div className="toolbar-segment" aria-label="Transform tools">
         <ToolButton active={activeTransformTool === "move"} icon={<Move3D size={16} />} label="Move" onClick={() => setActiveTransformTool("move")} />
@@ -114,6 +125,9 @@ export function Toolbar() {
         }}
       >
         <Disc3 size={16} /> Physics
+      </button>
+      <button disabled={!selectedEntityId} title="Delete selected" onClick={deleteSelectedEntity}>
+        <Trash2 size={16} /> Delete
       </button>
       <button title="Save scene" onClick={downloadScene}>
         <Save size={16} /> Save

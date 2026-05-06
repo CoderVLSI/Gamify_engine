@@ -16,4 +16,14 @@ describe("editor store transform tools", () => {
     store.getState().setActiveTransformTool("move");
     expect(store.getState().activeTransformTool).toBe("move");
   });
+
+  it("deletes the selected entity and clears selection", () => {
+    const store = createEditorStore();
+
+    store.getState().selectEntity("cube");
+    store.getState().deleteSelectedEntity();
+
+    expect(store.getState().scene.entities.some((entity) => entity.id === "cube")).toBe(false);
+    expect(store.getState().selectedEntityId).toBeNull();
+  });
 });

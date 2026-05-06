@@ -1,5 +1,5 @@
 import { createDefaultEntity, createTransform } from "./defaults";
-import type { Entity, Scene, SceneComponent, TransformComponent, Vec3 } from "./types";
+import type { Entity, MeshRenderer3DComponent, Scene, SceneComponent, TransformComponent, Vec3 } from "./types";
 
 function replaceEntity(scene: Scene, entity: Entity): Scene {
   return { ...scene, entities: scene.entities.map((candidate) => (candidate.id === entity.id ? entity : candidate)) };
@@ -7,6 +7,28 @@ function replaceEntity(scene: Scene, entity: Entity): Scene {
 
 export function createEntity(scene: Scene, input: Partial<Entity> = {}): Scene {
   return { ...scene, entities: [...scene.entities, createDefaultEntity(input)] };
+}
+
+export function createPrimitiveEntity(
+  scene: Scene,
+  primitive: MeshRenderer3DComponent["primitive"],
+  input: Partial<Entity> = {}
+): Scene {
+  const entity = createDefaultEntity({
+    ...input,
+    name: input.name ?? `${primitive[0].toUpperCase()}${primitive.slice(1)}`,
+    components: [
+      createTransform(),
+      {
+        id: "mesh-renderer",
+        type: "MeshRenderer3D",
+        version: 1,
+        primitive,
+        color: primitive === "sphere" ? "#93c5fd" : primitive === "plane" ? "#c4b5fd" : "#6ee7b7"
+      }
+    ]
+  });
+  return { ...scene, entities: [...scene.entities, entity] };
 }
 
 export function deleteEntity(scene: Scene, entityId: string): Scene {

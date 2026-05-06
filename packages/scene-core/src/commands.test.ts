@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addComponent, createDefaultScene, createEntity, setTransform, updateComponent } from "./index";
+import { addComponent, createDefaultScene, createEntity, createPrimitiveEntity, setTransform, updateComponent } from "./index";
 
 describe("scene commands", () => {
   it("creates an entity with a transform", () => {
@@ -44,5 +44,14 @@ describe("scene commands", () => {
     expect(updated.entities.find((entity) => entity.id === "hero")?.components).toContainEqual(
       expect.objectContaining({ id: "anim", fps: 8, playing: false })
     );
+  });
+
+  it("creates visible primitive entities", () => {
+    const scene = createDefaultScene("Main");
+    const updated = createPrimitiveEntity(scene, "sphere", { id: "orb", name: "Orb" });
+    const entity = updated.entities.find((candidate) => candidate.id === "orb");
+
+    expect(entity?.components).toContainEqual(expect.objectContaining({ type: "Transform" }));
+    expect(entity?.components).toContainEqual(expect.objectContaining({ type: "MeshRenderer3D", primitive: "sphere" }));
   });
 });

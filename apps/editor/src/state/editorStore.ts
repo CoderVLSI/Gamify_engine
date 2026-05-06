@@ -3,12 +3,15 @@ import {
   createDefaultProject,
   createDefaultScene,
   createEntity,
+  createPrimitiveEntity,
+  deleteEntity,
   setTransform,
   toPrettyJson,
   updateComponent,
   type GamifyProject,
   type Scene,
   type SceneComponent,
+  type MeshRenderer3DComponent,
   type Vec3
 } from "@gamify/scene-core";
 import { create } from "zustand";
@@ -27,6 +30,8 @@ type EditorStore = {
   selectEntity: (entityId: string | null) => void;
   setActiveTransformTool: (tool: TransformTool) => void;
   createEntity: (name?: string) => void;
+  createPrimitive: (primitive: MeshRenderer3DComponent["primitive"]) => void;
+  deleteSelectedEntity: () => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
   addComponent: (entityId: string, component: SceneComponent) => void;
   updateComponent: (entityId: string, componentId: string, patch: Record<string, unknown>) => void;
@@ -46,6 +51,16 @@ const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
     set((state) => {
       const scene = createEntity(state.scene, { name });
       return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  createPrimitive: (primitive) =>
+    set((state) => {
+      const scene = createPrimitiveEntity(state.scene, primitive);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  deleteSelectedEntity: () =>
+    set((state) => {
+      if (!state.selectedEntityId) return state;
+      return { scene: deleteEntity(state.scene, state.selectedEntityId), selectedEntityId: null };
     }),
   setTransform: (entityId, patch) => set((state) => ({ scene: setTransform(state.scene, entityId, patch) })),
   addComponent: (entityId, component) => set((state) => ({ scene: addComponent(state.scene, entityId, component) })),
