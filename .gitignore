@@ -4,6 +4,7 @@ dist/
 dist-types/
 dist-ssr/
 target/
+apps/editor/src-tauri/gen/
 .vite/
 *.log
 *.tsbuildinfo
