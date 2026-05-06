@@ -1,26 +1,25 @@
 import {
   Box,
   Car,
-  Circle,
-  Disc3,
+  ChevronDown,
+  Component,
   Expand,
-  Grid3X3,
   Layers3,
   Move3D,
-  Music,
+  Pause,
   Play,
+  Plus,
   Rotate3D,
   Save,
-  Sparkles,
-  Square,
-  Trash2,
-  UserRound,
-  Volume2
+  UserRound
 } from "lucide-react";
+import { useState } from "react";
 import type { ReactNode } from "react";
+import { ContextMenu, type ContextMenuState } from "./ContextMenu";
 import { type TransformTool, useEditorStore } from "../state/editorStore";
 
 export function Toolbar() {
+  const project = useEditorStore((state) => state.project);
   const createEntity = useEditorStore((state) => state.createEntity);
   const createPrimitive = useEditorStore((state) => state.createPrimitive);
   const createPlatformerPlayer = useEditorStore((state) => state.createPlatformerPlayer);
@@ -33,6 +32,40 @@ export function Toolbar() {
   const setActiveTransformTool = useEditorStore((state) => state.setActiveTransformTool);
   const deleteSelectedEntity = useEditorStore((state) => state.deleteSelectedEntity);
   const addComponent = useEditorStore((state) => state.addComponent);
+  const [menu, setMenu] = useState<ContextMenuState | null>(null);
+
+  function openCreateMenu(event: React.MouseEvent<HTMLElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenu({
+      x: rect.left,
+      y: rect.bottom + 6,
+      items: [
+        { label: "Empty Entity", onSelect: () => createEntity("Entity") },
+        { label: "Cube", onSelect: () => createPrimitive("cube") },
+        { label: "Sphere", onSelect: () => createPrimitive("sphere") },
+        { label: "Plane", onSelect: () => createPrimitive("plane") },
+        { label: "Platformer Player", onSelect: createPlatformerPlayer, separatorBefore: true },
+        { label: "Platform Tilemap", onSelect: createPlatformerTilemap },
+        { label: "Racing Vehicle", onSelect: createRacingVehicle },
+        { label: "Card Deck", onSelect: createCardDeck }
+      ]
+    });
+  }
+
+  function openComponentMenu(event: React.MouseEvent<HTMLElement>) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenu({
+      x: rect.left,
+      y: rect.bottom + 6,
+      items: [
+        { label: "Sprite Animation", disabled: !selectedEntityId, onSelect: addSpriteAnimation },
+        { label: "Sound Source", disabled: !selectedEntityId, onSelect: addSoundSource },
+        { label: "Music Track", disabled: !selectedEntityId, onSelect: addMusicTrack },
+        { label: "2D Physics Body", disabled: !selectedEntityId, onSelect: add2DPhysics },
+        { label: "Delete Selected", disabled: !selectedEntityId, danger: true, separatorBefore: true, onSelect: deleteSelectedEntity }
+      ]
+    });
+  }
 
   function downloadScene() {
     const blob = new Blob([serializeScene()], { type: "application/json" });
@@ -44,22 +77,91 @@ export function Toolbar() {
     URL.revokeObjectURL(url);
   }
 
+  function addSpriteAnimation() {
+    if (!selectedEntityId) return;
+    addComponent(selectedEntityId, {
+      id: crypto.randomUUID(),
+      type: "SpriteAnimation2D",
+      version: 1,
+      assetPath: "assets/sprites/hero.png",
+      frameWidth: 32,
+      frameHeight: 32,
+      frameCount: 4,
+      fps: 8,
+      loop: true,
+      playing: false
+    });
+  }
+
+  function addSoundSource() {
+    if (!selectedEntityId) return;
+    addComponent(selectedEntityId, {
+      id: crypto.randomUUID(),
+      type: "AudioSource",
+      version: 1,
+      assetPath: "assets/audio/sound.wav",
+      volume: 0.8,
+      loop: false,
+      autoplay: false
+    });
+  }
+
+  function addMusicTrack() {
+    if (!selectedEntityId) return;
+    addComponent(selectedEntityId, {
+      id: crypto.randomUUID(),
+      type: "MusicTrack",
+      version: 1,
+      assetPath: "assets/audio/music.ogg",
+      volume: 0.6,
+      loop: true,
+      autoplay: true
+    });
+  }
+
+  function add2DPhysics() {
+    if (!selectedEntityId) return;
+    addComponent(selectedEntityId, {
+      id: crypto.randomUUID(),
+      type: "Rigidbody2D",
+      version: 1,
+      bodyType: "dynamic",
+      gravityScale: 1
+    });
+    addComponent(selectedEntityId, {
+      id: crypto.randomUUID(),
+      type: "BoxCollider2D",
+      version: 1,
+      size: { x: 1, y: 1, z: 0 }
+    });
+  }
+
   return (
     <header className="toolbar">
-      <strong className="brand">Gamify Editor</strong>
-      <button title="Add empty entity" onClick={() => createEntity("Entity")}>
-        <Box size={16} /> Empty
+      <div className="app-mark" aria-label="Gamify Editor">
+        <span className="mark-cube">
+          <Box size={17} />
+        </span>
+        <div>
+          <strong>Gamify</strong>
+          <small>Engine Editor</small>
+        </div>
+      </div>
+      <button className="project-switcher" title="Current project">
+        <span>{project.name}</span>
+        <ChevronDown size={15} />
       </button>
-      <button title="Add cube" onClick={() => createPrimitive("cube")}>
-        <Box size={16} /> Cube
-      </button>
-      <button title="Add sphere" onClick={() => createPrimitive("sphere")}>
-        <Circle size={16} /> Sphere
-      </button>
-      <button title="Add plane" onClick={() => createPrimitive("plane")}>
-        <Square size={16} /> Plane
-      </button>
-      <div className="toolbar-segment" aria-label="Transform tools">
+      <nav className="top-command-group" aria-label="Create and component actions">
+        <button className="command-button primary-command" title="Create entity or game object" onClick={openCreateMenu}>
+          <Plus size={16} />
+          <span>Create</span>
+        </button>
+        <button className="command-button" title="Add component to selected entity" disabled={!selectedEntityId} onClick={openComponentMenu}>
+          <Component size={16} />
+          <span>Component</span>
+        </button>
+      </nav>
+      <div className="toolbar-segment transform-strip" aria-label="Transform tools">
         <ToolButton active={activeTransformTool === "move"} icon={<Move3D size={16} />} label="Move" onClick={() => setActiveTransformTool("move")} />
         <ToolButton
           active={activeTransformTool === "rotate"}
@@ -69,108 +171,30 @@ export function Toolbar() {
         />
         <ToolButton active={activeTransformTool === "scale"} icon={<Expand size={16} />} label="Scale" onClick={() => setActiveTransformTool("scale")} />
       </div>
-      <div className="toolbar-segment" aria-label="Game templates">
-        <button title="Add 2D platformer player" onClick={createPlatformerPlayer}>
-          <UserRound size={16} /> Player2D
+      <div className="toolbar-spacer" />
+      <div className="template-pills" aria-label="Fast templates">
+        <button title="Platformer player" onClick={createPlatformerPlayer}>
+          <UserRound size={15} /> 2D
         </button>
-        <button title="Add 2D tilemap" onClick={createPlatformerTilemap}>
-          <Grid3X3 size={16} /> Tilemap
+        <button title="Racing vehicle" onClick={createRacingVehicle}>
+          <Car size={15} /> 3D
         </button>
-        <button title="Add 3D racing vehicle" onClick={createRacingVehicle}>
-          <Car size={16} /> Vehicle
-        </button>
-        <button title="Add card deck" onClick={createCardDeck}>
-          <Layers3 size={16} /> Deck
+        <button title="Card deck" onClick={createCardDeck}>
+          <Layers3 size={15} /> Cards
         </button>
       </div>
-      <button
-        disabled={!selectedEntityId}
-        title="Add sprite animation"
-        onClick={() =>
-          selectedEntityId &&
-          addComponent(selectedEntityId, {
-            id: crypto.randomUUID(),
-            type: "SpriteAnimation2D",
-            version: 1,
-            assetPath: "assets/sprites/hero.png",
-            frameWidth: 32,
-            frameHeight: 32,
-            frameCount: 4,
-            fps: 8,
-            loop: true,
-            playing: false
-          })
-        }
-      >
-        <Sparkles size={16} /> Sprite
-      </button>
-      <button
-        disabled={!selectedEntityId}
-        title="Add sound effect"
-        onClick={() =>
-          selectedEntityId &&
-          addComponent(selectedEntityId, {
-            id: crypto.randomUUID(),
-            type: "AudioSource",
-            version: 1,
-            assetPath: "assets/audio/sound.wav",
-            volume: 0.8,
-            loop: false,
-            autoplay: false
-          })
-        }
-      >
-        <Volume2 size={16} /> Sound
-      </button>
-      <button
-        disabled={!selectedEntityId}
-        title="Add music"
-        onClick={() =>
-          selectedEntityId &&
-          addComponent(selectedEntityId, {
-            id: crypto.randomUUID(),
-            type: "MusicTrack",
-            version: 1,
-            assetPath: "assets/audio/music.ogg",
-            volume: 0.6,
-            loop: true,
-            autoplay: true
-          })
-        }
-      >
-        <Music size={16} /> Music
-      </button>
-      <button
-        disabled={!selectedEntityId}
-        title="Add 2D physics"
-        onClick={() => {
-          if (!selectedEntityId) return;
-          addComponent(selectedEntityId, {
-            id: crypto.randomUUID(),
-            type: "Rigidbody2D",
-            version: 1,
-            bodyType: "dynamic",
-            gravityScale: 1
-          });
-          addComponent(selectedEntityId, {
-            id: crypto.randomUUID(),
-            type: "BoxCollider2D",
-            version: 1,
-            size: { x: 1, y: 1, z: 0 }
-          });
-        }}
-      >
-        <Disc3 size={16} /> Physics
-      </button>
-      <button disabled={!selectedEntityId} title="Delete selected" onClick={deleteSelectedEntity}>
-        <Trash2 size={16} /> Delete
-      </button>
-      <button title="Save scene" onClick={downloadScene}>
-        <Save size={16} /> Save
-      </button>
-      <button title="Play preview">
-        <Play size={16} /> Play
-      </button>
+      <div className="play-cluster" aria-label="Run controls">
+        <button className="icon-command" title="Save scene" onClick={downloadScene}>
+          <Save size={16} />
+        </button>
+        <button className="play-button" title="Play preview">
+          <Play size={17} />
+        </button>
+        <button className="icon-command" title="Pause preview">
+          <Pause size={16} />
+        </button>
+      </div>
+      <ContextMenu menu={menu} onClose={() => setMenu(null)} />
     </header>
   );
 }
@@ -188,7 +212,8 @@ function ToolButton({
 }) {
   return (
     <button className={active ? "active" : ""} title={`${label} tool`} onClick={onClick}>
-      {icon} {label}
+      {icon}
+      <span>{label}</span>
     </button>
   );
 }

@@ -18,13 +18,13 @@ export function Viewport3D() {
     if (!canvasHost) return;
     const container = canvasHost;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setClearAlpha(0);
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#111318");
     if (sceneData.settings.viewportMode === "2d") {
       const grid = new THREE.GridHelper(24, 24, "#475569", "#273241");
       grid.rotation.x = Math.PI / 2;
