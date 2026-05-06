@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { addComponent, createDefaultScene, createEntity, createPrimitiveEntity, duplicateEntity, setTransform, updateComponent } from "./index";
+import {
+  addComponent,
+  createCardDeckEntity,
+  createDefaultProject,
+  createDefaultScene,
+  createEntity,
+  createPlatformerPlayer,
+  createPlatformerTilemap,
+  createPrimitiveEntity,
+  createRacingVehicle,
+  duplicateEntity,
+  setTransform,
+  updateComponent
+} from "./index";
 
 describe("scene commands", () => {
   it("creates an entity with a transform", () => {
@@ -64,5 +77,37 @@ describe("scene commands", () => {
     expect(duplicate?.components).toContainEqual(expect.objectContaining({ type: "Transform" }));
     expect(duplicate?.components).toContainEqual(expect.objectContaining({ type: "MeshRenderer3D", primitive: "cube" }));
     expect(duplicate?.components.map((component) => component.id)).not.toContain("mesh-renderer");
+  });
+
+  it("creates starter asset and animation manifests for game workflows", () => {
+    const project = createDefaultProject("Game");
+
+    expect(project.assets).toContainEqual(expect.objectContaining({ id: "asset-hero-run", kind: "spritesheet" }));
+    expect(project.assets).toContainEqual(expect.objectContaining({ id: "asset-racing-kart", kind: "model" }));
+    expect(project.animationClips).toContainEqual(expect.objectContaining({ id: "clip-hero-run", frameCount: 8 }));
+  });
+
+  it("creates platformer, racing, and card game starter entities", () => {
+    const withPlayer = createPlatformerPlayer(createDefaultScene("Main"), { id: "player" });
+    const player = withPlayer.entities.find((entity) => entity.id === "player");
+    expect(withPlayer.settings.viewportMode).toBe("2d");
+    expect(player?.components).toContainEqual(expect.objectContaining({ type: "PlatformerController2D" }));
+    expect(player?.components).toContainEqual(expect.objectContaining({ type: "SpriteAnimation2D", clipId: "clip-hero-run" }));
+
+    const withTilemap = createPlatformerTilemap(withPlayer, { id: "tilemap" });
+    expect(withTilemap.entities.find((entity) => entity.id === "tilemap")?.components).toContainEqual(
+      expect.objectContaining({ type: "Tilemap2D", tilesetAssetId: "asset-platform-tileset" })
+    );
+
+    const withVehicle = createRacingVehicle(withTilemap, { id: "vehicle" });
+    expect(withVehicle.settings.viewportMode).toBe("3d");
+    expect(withVehicle.entities.find((entity) => entity.id === "vehicle")?.components).toContainEqual(
+      expect.objectContaining({ type: "VehicleController3D", maxSpeed: 42 })
+    );
+
+    const withDeck = createCardDeckEntity(withVehicle, { id: "deck" });
+    expect(withDeck.entities.find((entity) => entity.id === "deck")?.components).toContainEqual(
+      expect.objectContaining({ type: "CardDeck", shuffleOnStart: true })
+    );
   });
 });

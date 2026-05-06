@@ -25,10 +25,19 @@ export function Viewport3D() {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color("#111318");
-    scene.add(new THREE.GridHelper(20, 20, "#475569", "#273241"));
+    if (sceneData.settings.viewportMode === "2d") {
+      const grid = new THREE.GridHelper(24, 24, "#475569", "#273241");
+      grid.rotation.x = Math.PI / 2;
+      scene.add(grid);
+    } else {
+      scene.add(new THREE.GridHelper(20, 20, "#475569", "#273241"));
+    }
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 1000);
     camera.position.set(5, 4, 7);
+    if (sceneData.settings.viewportMode === "2d") {
+      camera.position.set(0, 0, 14);
+    }
     camera.lookAt(0, 0, 0);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -55,24 +64,43 @@ export function Viewport3D() {
     for (const entity of sceneData.entities) {
       const transform = entity.components.find((component) => component.type === "Transform");
       const meshRenderer = entity.components.find((component) => component.type === "MeshRenderer3D");
-      if (transform?.type !== "Transform" || meshRenderer?.type !== "MeshRenderer3D") continue;
+      const spriteRenderer = entity.components.find((component) => component.type === "SpriteRenderer2D");
+      const spriteAnimation = entity.components.find((component) => component.type === "SpriteAnimation2D");
+      const tilemap = entity.components.find((component) => component.type === "Tilemap2D");
+      if (transform?.type !== "Transform") continue;
 
-      const geometry =
-        meshRenderer.primitive === "sphere"
+      let geometry: THREE.BufferGeometry | null = null;
+      let materialColor = "#6ee7b7";
+      if (meshRenderer?.type === "MeshRenderer3D") {
+        geometry =
+          meshRenderer.primitive === "sphere"
           ? new THREE.SphereGeometry(0.5, 32, 16)
           : meshRenderer.primitive === "plane"
             ? new THREE.PlaneGeometry(1, 1)
             : new THREE.BoxGeometry(1, 1, 1);
+        materialColor = meshRenderer.color;
+      } else if (spriteRenderer?.type === "SpriteRenderer2D" || spriteAnimation?.type === "SpriteAnimation2D") {
+        geometry = new THREE.PlaneGeometry(1, 1.4);
+        materialColor = spriteRenderer?.type === "SpriteRenderer2D" ? spriteRenderer.color : "#facc15";
+      } else if (tilemap?.type === "Tilemap2D") {
+        geometry = new THREE.PlaneGeometry(Math.max(1, tilemap.columns / 4), Math.max(1, tilemap.rows / 4));
+        materialColor = "#64748b";
+      }
+      if (!geometry) continue;
       const material = new THREE.MeshStandardMaterial({
-        color: meshRenderer.color,
+        color: materialColor,
         emissive: entity.id === selectedEntityId ? new THREE.Color("#1d4ed8") : new THREE.Color("#000000"),
-        emissiveIntensity: entity.id === selectedEntityId ? 0.25 : 0
+        emissiveIntensity: entity.id === selectedEntityId ? 0.25 : 0,
+        side: THREE.DoubleSide
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.name = entity.id;
       mesh.position.set(transform.position.x, transform.position.y, transform.position.z);
       mesh.rotation.set(transform.rotation.x, transform.rotation.y, transform.rotation.z);
       mesh.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
+      if (sceneData.settings.viewportMode === "2d" && meshRenderer?.type !== "MeshRenderer3D") {
+        mesh.position.z = transform.position.z;
+      }
       scene.add(mesh);
       pickables.push(mesh);
       meshesByEntityId.set(entity.id, mesh);
@@ -175,6 +203,7 @@ export function Viewport3D() {
     <div className="viewport-3d" ref={hostRef}>
       <div className="viewport-canvas" ref={canvasHostRef} />
       <div className="viewport-help">
+        <span>{sceneData.settings.viewportMode.toUpperCase()}</span>
         <span>Left drag orbit</span>
         <span>Right/middle drag pan</span>
         <span>Wheel zoom</span>

@@ -2,17 +2,26 @@ import {
   addComponent,
   createDefaultProject,
   createDefaultScene,
+  createAssetRecord,
+  createSpriteAnimationClip,
+  createCardDeckEntity,
   createEntity,
+  createPlatformerPlayer,
+  createPlatformerTilemap,
   createPrimitiveEntity,
+  createRacingVehicle,
   deleteEntity,
   duplicateEntity,
   setTransform,
   toPrettyJson,
   updateComponent,
+  type AssetKind,
+  type AssetRecord,
   type GamifyProject,
   type Scene,
   type SceneComponent,
   type MeshRenderer3DComponent,
+  type SpriteAnimationClip,
   type Vec3
 } from "@gamify/scene-core";
 import { create } from "zustand";
@@ -32,6 +41,12 @@ type EditorStore = {
   setActiveTransformTool: (tool: TransformTool) => void;
   createEntity: (name?: string) => void;
   createPrimitive: (primitive: MeshRenderer3DComponent["primitive"]) => void;
+  createPlatformerPlayer: () => void;
+  createPlatformerTilemap: () => void;
+  createRacingVehicle: () => void;
+  createCardDeck: () => void;
+  addAsset: (kind: AssetKind, input?: Partial<AssetRecord>) => void;
+  addAnimationClip: (input?: Partial<SpriteAnimationClip>) => void;
   deleteSelectedEntity: () => void;
   duplicateSelectedEntity: () => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
@@ -59,6 +74,34 @@ const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
       const scene = createPrimitiveEntity(state.scene, primitive);
       return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
     }),
+  createPlatformerPlayer: () =>
+    set((state) => {
+      const scene = createPlatformerPlayer(state.scene);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  createPlatformerTilemap: () =>
+    set((state) => {
+      const scene = createPlatformerTilemap(state.scene);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  createRacingVehicle: () =>
+    set((state) => {
+      const scene = createRacingVehicle(state.scene);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  createCardDeck: () =>
+    set((state) => {
+      const scene = createCardDeckEntity(state.scene);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
+    }),
+  addAsset: (kind, input = {}) =>
+    set((state) => ({
+      project: { ...state.project, assets: [...state.project.assets, createAssetRecord(kind, input)] }
+    })),
+  addAnimationClip: (input = {}) =>
+    set((state) => ({
+      project: { ...state.project, animationClips: [...state.project.animationClips, createSpriteAnimationClip(input)] }
+    })),
   deleteSelectedEntity: () =>
     set((state) => {
       if (!state.selectedEntityId) return state;

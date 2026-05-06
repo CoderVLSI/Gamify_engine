@@ -1,4 +1,15 @@
-import type { AudioComponent, PhysicsBody2DComponent, SceneComponent, SpriteAnimation2DComponent, TransformComponent } from "@gamify/scene-core";
+import type {
+  AudioComponent,
+  CardDeckComponent,
+  MeshRenderer3DComponent,
+  PhysicsBody2DComponent,
+  PlatformerController2DComponent,
+  SceneComponent,
+  SpriteAnimation2DComponent,
+  Tilemap2DComponent,
+  TransformComponent,
+  VehicleController3DComponent
+} from "@gamify/scene-core";
 import { useEditorStore } from "../state/editorStore";
 
 export function InspectorPanel() {
@@ -55,6 +66,21 @@ function ComponentFields({
   if (component.type === "SpriteAnimation2D") {
     return <SpriteAnimationFields component={component} onPatch={onPatch} />;
   }
+  if (component.type === "MeshRenderer3D") {
+    return <MeshRendererFields component={component} onPatch={onPatch} />;
+  }
+  if (component.type === "Tilemap2D") {
+    return <TilemapFields component={component} onPatch={onPatch} />;
+  }
+  if (component.type === "PlatformerController2D") {
+    return <PlatformerControllerFields component={component} onPatch={onPatch} />;
+  }
+  if (component.type === "VehicleController3D") {
+    return <VehicleControllerFields component={component} onPatch={onPatch} />;
+  }
+  if (component.type === "CardDeck") {
+    return <CardDeckFields component={component} onPatch={onPatch} />;
+  }
   if (component.type === "AudioSource" || component.type === "MusicTrack") {
     return <AudioFields component={component} onPatch={onPatch} />;
   }
@@ -76,6 +102,28 @@ function ComponentFields({
   return null;
 }
 
+function MeshRendererFields({
+  component,
+  onPatch
+}: {
+  component: MeshRenderer3DComponent;
+  onPatch: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <label>
+        Primitive
+        <select value={component.primitive} onChange={(event) => onPatch({ primitive: event.currentTarget.value })}>
+          <option value="cube">Cube</option>
+          <option value="sphere">Sphere</option>
+          <option value="plane">Plane</option>
+        </select>
+      </label>
+      <TextField label="Color" value={component.color} onChange={(color) => onPatch({ color })} />
+    </>
+  );
+}
+
 function SpriteAnimationFields({
   component,
   onPatch
@@ -86,12 +134,86 @@ function SpriteAnimationFields({
   return (
     <>
       <TextField label="Asset" value={component.assetPath} onChange={(assetPath) => onPatch({ assetPath })} />
+      <TextField label="Clip ID" value={component.clipId ?? ""} onChange={(clipId) => onPatch({ clipId })} />
       <NumberField label="Frame width" value={component.frameWidth} onChange={(frameWidth) => onPatch({ frameWidth })} />
       <NumberField label="Frame height" value={component.frameHeight} onChange={(frameHeight) => onPatch({ frameHeight })} />
       <NumberField label="Frame count" value={component.frameCount} onChange={(frameCount) => onPatch({ frameCount })} />
       <NumberField label="FPS" value={component.fps} onChange={(fps) => onPatch({ fps })} />
       <CheckboxField label="Loop" checked={component.loop} onChange={(loop) => onPatch({ loop })} />
       <CheckboxField label="Playing" checked={component.playing} onChange={(playing) => onPatch({ playing })} />
+    </>
+  );
+}
+
+function TilemapFields({
+  component,
+  onPatch
+}: {
+  component: Tilemap2DComponent;
+  onPatch: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <TextField label="Tileset asset" value={component.tilesetAssetId} onChange={(tilesetAssetId) => onPatch({ tilesetAssetId })} />
+      <NumberField label="Tile width" value={component.tileWidth} onChange={(tileWidth) => onPatch({ tileWidth })} />
+      <NumberField label="Tile height" value={component.tileHeight} onChange={(tileHeight) => onPatch({ tileHeight })} />
+      <NumberField label="Columns" value={component.columns} onChange={(columns) => onPatch({ columns })} />
+      <NumberField label="Rows" value={component.rows} onChange={(rows) => onPatch({ rows })} />
+      <TextField label="Collision layer" value={component.collisionLayer} onChange={(collisionLayer) => onPatch({ collisionLayer })} />
+    </>
+  );
+}
+
+function PlatformerControllerFields({
+  component,
+  onPatch
+}: {
+  component: PlatformerController2DComponent;
+  onPatch: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <NumberField label="Max speed" value={component.maxSpeed} step={0.1} onChange={(maxSpeed) => onPatch({ maxSpeed })} />
+      <NumberField label="Acceleration" value={component.acceleration} step={0.1} onChange={(acceleration) => onPatch({ acceleration })} />
+      <NumberField label="Jump velocity" value={component.jumpVelocity} step={0.1} onChange={(jumpVelocity) => onPatch({ jumpVelocity })} />
+      <NumberField label="Coyote ms" value={component.coyoteTimeMs} onChange={(coyoteTimeMs) => onPatch({ coyoteTimeMs })} />
+      <NumberField label="Air control" value={component.airControl} step={0.05} onChange={(airControl) => onPatch({ airControl })} />
+    </>
+  );
+}
+
+function VehicleControllerFields({
+  component,
+  onPatch
+}: {
+  component: VehicleController3DComponent;
+  onPatch: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <NumberField label="Max speed" value={component.maxSpeed} step={0.1} onChange={(maxSpeed) => onPatch({ maxSpeed })} />
+      <NumberField label="Acceleration" value={component.acceleration} step={0.1} onChange={(acceleration) => onPatch({ acceleration })} />
+      <NumberField label="Steering" value={component.steering} step={0.1} onChange={(steering) => onPatch({ steering })} />
+      <NumberField label="Grip" value={component.grip} step={0.05} onChange={(grip) => onPatch({ grip })} />
+      <NumberField label="Brake force" value={component.brakeForce} step={0.1} onChange={(brakeForce) => onPatch({ brakeForce })} />
+    </>
+  );
+}
+
+function CardDeckFields({
+  component,
+  onPatch
+}: {
+  component: CardDeckComponent;
+  onPatch: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <TextField label="Card back" value={component.cardBackAssetId} onChange={(cardBackAssetId) => onPatch({ cardBackAssetId })} />
+      <TextField label="Suits" value={component.suits.join(", ")} onChange={(value) => onPatch({ suits: splitList(value) })} />
+      <TextField label="Ranks" value={component.ranks.join(", ")} onChange={(value) => onPatch({ ranks: splitList(value) })} />
+      <NumberField label="Draw count" value={component.drawCount} onChange={(drawCount) => onPatch({ drawCount })} />
+      <CheckboxField label="Shuffle on start" checked={component.shuffleOnStart} onChange={(shuffleOnStart) => onPatch({ shuffleOnStart })} />
     </>
   );
 }
@@ -127,6 +249,7 @@ function Rigidbody2DFields({
         <select value={component.bodyType} onChange={(event) => onPatch({ bodyType: event.currentTarget.value })}>
           <option value="dynamic">Dynamic</option>
           <option value="static">Static</option>
+          <option value="kinematic">Kinematic</option>
         </select>
       </label>
       <NumberField label="Gravity scale" value={component.gravityScale} step={0.1} onChange={(gravityScale) => onPatch({ gravityScale })} />
@@ -169,4 +292,11 @@ function CheckboxField({ label, checked, onChange }: { label: string; checked: b
       {label}
     </label>
   );
+}
+
+function splitList(value: string): string[] {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }

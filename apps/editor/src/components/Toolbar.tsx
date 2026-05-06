@@ -1,10 +1,32 @@
-import { Box, Circle, Disc3, Expand, Move3D, Music, Play, Rotate3D, Save, Sparkles, Square, Trash2, Volume2 } from "lucide-react";
+import {
+  Box,
+  Car,
+  Circle,
+  Disc3,
+  Expand,
+  Grid3X3,
+  Layers3,
+  Move3D,
+  Music,
+  Play,
+  Rotate3D,
+  Save,
+  Sparkles,
+  Square,
+  Trash2,
+  UserRound,
+  Volume2
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { type TransformTool, useEditorStore } from "../state/editorStore";
 
 export function Toolbar() {
   const createEntity = useEditorStore((state) => state.createEntity);
   const createPrimitive = useEditorStore((state) => state.createPrimitive);
+  const createPlatformerPlayer = useEditorStore((state) => state.createPlatformerPlayer);
+  const createPlatformerTilemap = useEditorStore((state) => state.createPlatformerTilemap);
+  const createRacingVehicle = useEditorStore((state) => state.createRacingVehicle);
+  const createCardDeck = useEditorStore((state) => state.createCardDeck);
   const serializeScene = useEditorStore((state) => state.serializeScene);
   const selectedEntityId = useEditorStore((state) => state.selectedEntityId);
   const activeTransformTool = useEditorStore((state) => state.activeTransformTool);
@@ -46,6 +68,20 @@ export function Toolbar() {
           onClick={() => setActiveTransformTool("rotate")}
         />
         <ToolButton active={activeTransformTool === "scale"} icon={<Expand size={16} />} label="Scale" onClick={() => setActiveTransformTool("scale")} />
+      </div>
+      <div className="toolbar-segment" aria-label="Game templates">
+        <button title="Add 2D platformer player" onClick={createPlatformerPlayer}>
+          <UserRound size={16} /> Player2D
+        </button>
+        <button title="Add 2D tilemap" onClick={createPlatformerTilemap}>
+          <Grid3X3 size={16} /> Tilemap
+        </button>
+        <button title="Add 3D racing vehicle" onClick={createRacingVehicle}>
+          <Car size={16} /> Vehicle
+        </button>
+        <button title="Add card deck" onClick={createCardDeck}>
+          <Layers3 size={16} /> Deck
+        </button>
       </div>
       <button
         disabled={!selectedEntityId}

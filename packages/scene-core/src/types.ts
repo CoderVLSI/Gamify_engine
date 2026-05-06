@@ -15,7 +15,11 @@ export type ComponentType =
   | "CircleCollider2D"
   | "Rigidbody3D"
   | "BoxCollider3D"
-  | "SphereCollider3D";
+  | "SphereCollider3D"
+  | "Tilemap2D"
+  | "PlatformerController2D"
+  | "VehicleController3D"
+  | "CardDeck";
 
 export type BaseComponent = {
   id: string;
@@ -64,6 +68,7 @@ export type Camera2DComponent = BaseComponent & {
 export type SpriteAnimation2DComponent = BaseComponent & {
   type: "SpriteAnimation2D";
   assetPath: string;
+  clipId?: string;
   frameWidth: number;
   frameHeight: number;
   frameCount: number;
@@ -82,8 +87,45 @@ export type AudioComponent = BaseComponent & {
 
 export type PhysicsBody2DComponent = BaseComponent & {
   type: "Rigidbody2D";
-  bodyType: "static" | "dynamic";
+  bodyType: "static" | "dynamic" | "kinematic";
   gravityScale: number;
+};
+
+export type Tilemap2DComponent = BaseComponent & {
+  type: "Tilemap2D";
+  tilesetAssetId: string;
+  tileWidth: number;
+  tileHeight: number;
+  columns: number;
+  rows: number;
+  collisionLayer: string;
+};
+
+export type PlatformerController2DComponent = BaseComponent & {
+  type: "PlatformerController2D";
+  maxSpeed: number;
+  acceleration: number;
+  jumpVelocity: number;
+  coyoteTimeMs: number;
+  airControl: number;
+};
+
+export type VehicleController3DComponent = BaseComponent & {
+  type: "VehicleController3D";
+  maxSpeed: number;
+  acceleration: number;
+  steering: number;
+  grip: number;
+  brakeForce: number;
+};
+
+export type CardDeckComponent = BaseComponent & {
+  type: "CardDeck";
+  cardBackAssetId: string;
+  suits: string[];
+  ranks: string[];
+  shuffleOnStart: boolean;
+  drawCount: number;
 };
 
 export type ColliderComponent = BaseComponent & {
@@ -102,7 +144,11 @@ export type SceneComponent =
   | Camera2DComponent
   | AudioComponent
   | PhysicsBody2DComponent
-  | ColliderComponent;
+  | ColliderComponent
+  | Tilemap2DComponent
+  | PlatformerController2DComponent
+  | VehicleController3DComponent
+  | CardDeckComponent;
 
 export type Entity = {
   id: string;
@@ -131,4 +177,27 @@ export type GamifyProject = {
   editorVersion: string;
   defaultScenePath: string;
   assetRoots: string[];
+  assets: AssetRecord[];
+  animationClips: SpriteAnimationClip[];
+};
+
+export type AssetKind = "sprite" | "spritesheet" | "tileset" | "audio" | "music" | "model" | "material" | "scene" | "card";
+
+export type AssetRecord = {
+  id: string;
+  kind: AssetKind;
+  name: string;
+  path: string;
+  tags: string[];
+};
+
+export type SpriteAnimationClip = {
+  id: string;
+  name: string;
+  spritesheetAssetId: string;
+  frameWidth: number;
+  frameHeight: number;
+  frameCount: number;
+  fps: number;
+  loop: boolean;
 };

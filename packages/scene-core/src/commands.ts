@@ -1,4 +1,12 @@
-import { createDefaultEntity, createTransform } from "./defaults";
+import {
+  createCardDeck,
+  createDefaultEntity,
+  createPlatformerController,
+  createSpriteAnimation,
+  createTilemap2D,
+  createTransform,
+  createVehicleController
+} from "./defaults";
 import type { Entity, MeshRenderer3DComponent, Scene, SceneComponent, TransformComponent, Vec3 } from "./types";
 
 function replaceEntity(scene: Scene, entity: Entity): Scene {
@@ -27,6 +35,67 @@ export function createPrimitiveEntity(
         color: primitive === "sphere" ? "#93c5fd" : primitive === "plane" ? "#c4b5fd" : "#6ee7b7"
       }
     ]
+  });
+  return { ...scene, entities: [...scene.entities, entity] };
+}
+
+export function createPlatformerPlayer(scene: Scene, input: Partial<Entity> = {}): Scene {
+  const entity = createDefaultEntity({
+    ...input,
+    name: input.name ?? "Platformer Player",
+    components: [
+      createTransform(),
+      {
+        id: "sprite-renderer",
+        type: "SpriteRenderer2D",
+        version: 1,
+        assetPath: "assets/sprites/hero-run.png",
+        color: "#ffffff"
+      },
+      createSpriteAnimation(),
+      {
+        id: "rigidbody-2d",
+        type: "Rigidbody2D",
+        version: 1,
+        bodyType: "dynamic",
+        gravityScale: 1
+      },
+      { id: "box-collider-2d", type: "BoxCollider2D", version: 1, size: { x: 0.8, y: 1.6, z: 0 } },
+      createPlatformerController()
+    ]
+  });
+  return { ...scene, settings: { ...scene.settings, viewportMode: "2d" }, entities: [...scene.entities, entity] };
+}
+
+export function createPlatformerTilemap(scene: Scene, input: Partial<Entity> = {}): Scene {
+  const entity = createDefaultEntity({
+    ...input,
+    name: input.name ?? "Platform Tilemap",
+    components: [createTransform(), createTilemap2D(), { id: "tilemap-collider", type: "BoxCollider2D", version: 1, size: { x: 64, y: 1, z: 0 } }]
+  });
+  return { ...scene, settings: { ...scene.settings, viewportMode: "2d" }, entities: [...scene.entities, entity] };
+}
+
+export function createRacingVehicle(scene: Scene, input: Partial<Entity> = {}): Scene {
+  const entity = createDefaultEntity({
+    ...input,
+    name: input.name ?? "Racing Vehicle",
+    components: [
+      createTransform(),
+      { id: "vehicle-mesh", type: "MeshRenderer3D", version: 1, primitive: "cube", color: "#ef4444" },
+      { id: "vehicle-rigidbody", type: "Rigidbody3D", version: 1, size: { x: 1.8, y: 0.7, z: 3.2 } },
+      { id: "vehicle-collider", type: "BoxCollider3D", version: 1, size: { x: 1.8, y: 0.7, z: 3.2 } },
+      createVehicleController()
+    ]
+  });
+  return { ...scene, settings: { ...scene.settings, viewportMode: "3d" }, entities: [...scene.entities, entity] };
+}
+
+export function createCardDeckEntity(scene: Scene, input: Partial<Entity> = {}): Scene {
+  const entity = createDefaultEntity({
+    ...input,
+    name: input.name ?? "Card Deck",
+    components: [createTransform(), createCardDeck()]
   });
   return { ...scene, entities: [...scene.entities, entity] };
 }
