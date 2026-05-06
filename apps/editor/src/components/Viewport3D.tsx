@@ -1,17 +1,19 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { useEditorStore } from "../state/editorStore";
 
 export function Viewport3D() {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const sceneData = useEditorStore((state) => state.scene);
   const selectedEntityId = useEditorStore((state) => state.selectedEntityId);
   const selectEntity = useEditorStore((state) => state.selectEntity);
 
   useEffect(() => {
-    const hostElement = hostRef.current;
-    if (!hostElement) return;
-    const container = hostElement;
+    const canvasHost = canvasHostRef.current;
+    if (!canvasHost) return;
+    const container = canvasHost;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -25,6 +27,20 @@ export function Viewport3D() {
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 1000);
     camera.position.set(5, 4, 7);
     camera.lookAt(0, 0, 0);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = true;
+    controls.enableZoom = true;
+    controls.screenSpacePanning = true;
+    controls.target.set(0, 0, 0);
+    controls.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.PAN
+    };
+    controls.update();
 
     const light = new THREE.DirectionalLight("#ffffff", 1);
     light.position.set(4, 8, 5);
@@ -59,14 +75,28 @@ export function Viewport3D() {
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
+    let pointerStart: { x: number; y: number; button: number } | null = null;
 
     function handlePointerDown(event: PointerEvent) {
+      pointerStart = { x: event.clientX, y: event.clientY, button: event.button };
+    }
+
+    function handlePointerUp(event: PointerEvent) {
+      if (!pointerStart || pointerStart.button !== 0) return;
+      const moved = Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y);
+      pointerStart = null;
+      if (moved > 4) return;
+
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       const hit = raycaster.intersectObjects(pickables)[0];
       selectEntity(hit?.object.name ?? null);
+    }
+
+    function preventContextMenu(event: MouseEvent) {
+      event.preventDefault();
     }
 
     function resize() {
@@ -78,12 +108,15 @@ export function Viewport3D() {
     }
 
     renderer.domElement.addEventListener("pointerdown", handlePointerDown);
+    renderer.domElement.addEventListener("pointerup", handlePointerUp);
+    renderer.domElement.addEventListener("contextmenu", preventContextMenu);
     const observer = new ResizeObserver(resize);
     observer.observe(container);
 
     let frame = 0;
     function render() {
       frame = requestAnimationFrame(render);
+      controls.update();
       renderer.render(scene, camera);
     }
     render();
@@ -92,6 +125,9 @@ export function Viewport3D() {
       cancelAnimationFrame(frame);
       observer.disconnect();
       renderer.domElement.removeEventListener("pointerdown", handlePointerDown);
+      renderer.domElement.removeEventListener("pointerup", handlePointerUp);
+      renderer.domElement.removeEventListener("contextmenu", preventContextMenu);
+      controls.dispose();
       renderer.dispose();
       for (const pickable of pickables) {
         if (pickable instanceof THREE.Mesh) {
@@ -107,5 +143,15 @@ export function Viewport3D() {
     };
   }, [sceneData, selectedEntityId, selectEntity]);
 
-  return <div className="viewport-3d" ref={hostRef} />;
+  return (
+    <div className="viewport-3d" ref={hostRef}>
+      <div className="viewport-canvas" ref={canvasHostRef} />
+      <div className="viewport-help">
+        <span>Left drag orbit</span>
+        <span>Right/middle drag pan</span>
+        <span>Wheel zoom</span>
+        <span>Click select</span>
+      </div>
+    </div>
+  );
 }
