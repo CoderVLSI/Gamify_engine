@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { AudioLines, Box, Clapperboard, Folder, FolderPlus, Image, Layers, MoreVertical, Music, Search, Star } from "lucide-react";
 import { ContextMenu, type ContextMenuState } from "./ContextMenu";
+import { SpriteStudioPanel } from "./SpriteStudioPanel";
 import { useEditorStore } from "../state/editorStore";
 
 export function ProjectPanel() {
   const project = useEditorStore((state) => state.project);
   const addAsset = useEditorStore((state) => state.addAsset);
   const addAnimationClip = useEditorStore((state) => state.addAnimationClip);
+  const selectedAssetId = useEditorStore((state) => state.selectedAssetId);
+  const selectedAnimationClipId = useEditorStore((state) => state.selectedAnimationClipId);
+  const selectAsset = useEditorStore((state) => state.selectAsset);
+  const selectAnimationClip = useEditorStore((state) => state.selectAnimationClip);
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
 
   function openMenu(event: React.MouseEvent) {
@@ -49,21 +54,30 @@ export function ProjectPanel() {
           <Folder size={16} /> Assets
         </div>
         {project.assets.map((asset) => (
-          <div className="asset-row nested asset-record" key={asset.id} title={asset.path}>
+          <button
+            className={`asset-row nested asset-record ${asset.id === selectedAssetId ? "selected" : ""}`}
+            key={asset.id}
+            title={asset.path}
+            onClick={() => selectAsset(asset.id)}
+          >
             <AssetIcon kind={asset.kind} />
             <span>{asset.name}</span>
             <small>{asset.kind}</small>
-          </div>
+          </button>
         ))}
         <div className="asset-row">
           <Clapperboard size={16} /> Animation Clips
         </div>
         {project.animationClips.map((clip) => (
-          <div className="asset-row nested asset-record" key={clip.id}>
+          <button
+            className={`asset-row nested asset-record ${clip.id === selectedAnimationClipId ? "selected" : ""}`}
+            key={clip.id}
+            onClick={() => selectAnimationClip(clip.id)}
+          >
             <Clapperboard size={16} />
             <span>{clip.name}</span>
             <small>{clip.frameCount}f @ {clip.fps}fps</small>
-          </div>
+          </button>
         ))}
         <div className="asset-row muted">
           <Folder size={16} /> Packages
@@ -73,6 +87,7 @@ export function ProjectPanel() {
         <span>{project.name}</span>
         <span>{project.defaultScenePath}</span>
       </div>
+      <SpriteStudioPanel />
       <ContextMenu menu={menu} onClose={() => setMenu(null)} />
     </aside>
   );

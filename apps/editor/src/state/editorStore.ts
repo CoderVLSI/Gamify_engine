@@ -34,10 +34,14 @@ type EditorStore = {
   project: GamifyProject;
   scene: Scene;
   selectedEntityId: string | null;
+  selectedAssetId: string | null;
+  selectedAnimationClipId: string | null;
   activeTransformTool: TransformTool;
   setProject: (project: GamifyProject) => void;
   setScene: (scene: Scene) => void;
   selectEntity: (entityId: string | null) => void;
+  selectAsset: (assetId: string | null) => void;
+  selectAnimationClip: (clipId: string | null) => void;
   setActiveTransformTool: (tool: TransformTool) => void;
   createEntity: (name?: string) => void;
   createPrimitive: (primitive: MeshRenderer3DComponent["primitive"]) => void;
@@ -47,6 +51,8 @@ type EditorStore = {
   createCardDeck: () => void;
   addAsset: (kind: AssetKind, input?: Partial<AssetRecord>) => void;
   addAnimationClip: (input?: Partial<SpriteAnimationClip>) => void;
+  updateAnimationClip: (clipId: string, patch: Partial<SpriteAnimationClip>) => void;
+  updateAsset: (assetId: string, patch: Partial<AssetRecord>) => void;
   deleteSelectedEntity: () => void;
   duplicateSelectedEntity: () => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
@@ -59,10 +65,14 @@ const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
   project: createDefaultProject("Gamify Sample"),
   scene: createDefaultScene("Main"),
   selectedEntityId: "cube",
+  selectedAssetId: "asset-hero-run",
+  selectedAnimationClipId: "clip-hero-run",
   activeTransformTool: "move",
   setProject: (project) => set({ project }),
   setScene: (scene) => set({ scene, selectedEntityId: scene.entities[0]?.id ?? null }),
   selectEntity: (selectedEntityId) => set({ selectedEntityId }),
+  selectAsset: (selectedAssetId) => set({ selectedAssetId }),
+  selectAnimationClip: (selectedAnimationClipId) => set({ selectedAnimationClipId }),
   setActiveTransformTool: (activeTransformTool) => set({ activeTransformTool }),
   createEntity: (name = "Entity") =>
     set((state) => {
@@ -95,12 +105,35 @@ const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
       return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
     }),
   addAsset: (kind, input = {}) =>
-    set((state) => ({
-      project: { ...state.project, assets: [...state.project.assets, createAssetRecord(kind, input)] }
-    })),
+    set((state) => {
+      const asset = createAssetRecord(kind, input);
+      return {
+        project: { ...state.project, assets: [...state.project.assets, asset] },
+        selectedAssetId: asset.id
+      };
+    }),
   addAnimationClip: (input = {}) =>
+    set((state) => {
+      const clip = createSpriteAnimationClip(input);
+      return {
+        project: { ...state.project, animationClips: [...state.project.animationClips, clip] },
+        selectedAnimationClipId: clip.id,
+        selectedAssetId: clip.spritesheetAssetId
+      };
+    }),
+  updateAnimationClip: (clipId, patch) =>
     set((state) => ({
-      project: { ...state.project, animationClips: [...state.project.animationClips, createSpriteAnimationClip(input)] }
+      project: {
+        ...state.project,
+        animationClips: state.project.animationClips.map((clip) => (clip.id === clipId ? { ...clip, ...patch } : clip))
+      }
+    })),
+  updateAsset: (assetId, patch) =>
+    set((state) => ({
+      project: {
+        ...state.project,
+        assets: state.project.assets.map((asset) => (asset.id === assetId ? { ...asset, ...patch } : asset))
+      }
     })),
   deleteSelectedEntity: () =>
     set((state) => {

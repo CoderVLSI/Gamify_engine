@@ -21,4 +21,40 @@ describe("mcp tools", () => {
       position: { x: 10, y: 0, z: 2 }
     });
   });
+
+  it("creates game starter entities through the local command handler", async () => {
+    const scene = createDefaultScene("Main");
+    const withPlayer = await applyLocalTool(scene, "create_platformer_player", {});
+    const withVehicle = await applyLocalTool(withPlayer.scene, "create_racing_vehicle", {});
+    const withDeck = await applyLocalTool(withVehicle.scene, "create_card_deck", {});
+
+    expect(withPlayer.scene.entities.at(-1)?.components).toContainEqual(expect.objectContaining({ type: "PlatformerController2D" }));
+    expect(withVehicle.scene.entities.at(-1)?.components).toContainEqual(expect.objectContaining({ type: "VehicleController3D" }));
+    expect(withDeck.scene.entities.at(-1)?.components).toContainEqual(expect.objectContaining({ type: "CardDeck" }));
+  });
+
+  it("adds and updates components through the local command handler", async () => {
+    const scene = createDefaultScene("Main");
+    const withComponent = await applyLocalTool(scene, "add_component", {
+      entityId: "cube",
+      component: {
+        id: "agent-audio",
+        type: "AudioSource",
+        version: 1,
+        assetPath: "assets/audio/jump.wav",
+        volume: 0.5,
+        loop: false,
+        autoplay: false
+      }
+    });
+    const updated = await applyLocalTool(withComponent.scene, "update_component", {
+      entityId: "cube",
+      componentId: "agent-audio",
+      patch: { volume: 0.9 }
+    });
+
+    expect(updated.scene.entities.find((entity) => entity.id === "cube")?.components).toContainEqual(
+      expect.objectContaining({ id: "agent-audio", volume: 0.9 })
+    );
+  });
 });

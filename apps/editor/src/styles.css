@@ -207,7 +207,7 @@ select {
 .editor-grid {
   display: grid;
   grid-template-columns: 300px minmax(420px, 1fr) 360px;
-  grid-template-rows: minmax(0, 1fr) 210px;
+  grid-template-rows: minmax(0, 1fr) 420px;
   min-height: 0;
 }
 
@@ -236,6 +236,8 @@ select {
 .project-panel {
   grid-column: 2;
   grid-row: 2;
+  display: grid;
+  grid-template-rows: auto auto 88px auto minmax(260px, 1fr);
   border-top: 1px solid #343a46;
 }
 
@@ -404,6 +406,7 @@ select {
 
 .asset-tree {
   padding: 4px 0;
+  overflow: auto;
 }
 
 .asset-row {
@@ -413,6 +416,10 @@ select {
   gap: 6px;
   padding: 6px 12px;
   color: #d2dae5;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  text-align: left;
 }
 
 .asset-row.asset-record {
@@ -430,6 +437,11 @@ select {
   font-size: 11px;
 }
 
+.asset-row.selected {
+  color: #ffffff;
+  background: linear-gradient(90deg, #253d55, #1d303f);
+}
+
 .asset-row.nested {
   padding-left: 30px;
 }
@@ -440,8 +452,6 @@ select {
 }
 
 .project-meta {
-  position: sticky;
-  bottom: 0;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -450,6 +460,179 @@ select {
   background: linear-gradient(#171c22, #141820);
   border-top: 1px solid #0e1117;
   font-size: 12px;
+}
+
+.sprite-studio {
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 10px 10px;
+  background: linear-gradient(#151b22, #11161c);
+  border-top: 1px solid #2b3340;
+}
+
+.sprite-studio.empty p {
+  margin: 8px 0 0;
+  color: #8d99a8;
+}
+
+.sprite-studio-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sprite-studio-header h3 {
+  flex: 1;
+  margin: 0;
+  color: #e8eef6;
+  font-size: 13px;
+}
+
+.sprite-studio-header button,
+.sprite-controls button {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: #cbd6e2;
+  background: #202833;
+  border: 1px solid #384455;
+  border-radius: 5px;
+}
+
+.clip-selector {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.clip-selector label,
+.sprite-controls label {
+  display: grid;
+  gap: 4px;
+  color: #9ba8b8;
+  font-size: 11px;
+}
+
+.clip-selector select,
+.sprite-controls input {
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0 7px;
+  color: #eef4fb;
+  background: #0f1620;
+  border: 1px solid #334155;
+  border-radius: 5px;
+}
+
+.sprite-preview-stage {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sprite-preview-checker {
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 74px;
+  background:
+    linear-gradient(45deg, #111827 25%, transparent 25% 75%, #111827 75%),
+    linear-gradient(45deg, #111827 25%, #17202b 25% 75%, #111827 75%);
+  background-position: 0 0, 8px 8px;
+  background-size: 16px 16px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+}
+
+.sprite-frame-large {
+  width: 44px;
+  height: 54px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 8px rgb(0 0 0 / 35%));
+}
+
+.sprite-preview-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: #93a4b8;
+  font-size: 12px;
+}
+
+.sprite-preview-meta strong {
+  color: #f4f8fc;
+  font-size: 14px;
+}
+
+.sprite-preview-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-strip {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.timeline-strip button {
+  min-width: 30px;
+  height: 42px;
+  padding: 3px;
+  color: #a9b5c6;
+  background: #111923;
+  border: 1px solid #2d3745;
+  border-radius: 5px;
+}
+
+.timeline-strip button.active {
+  border-color: #4fd1c5;
+  background: #17313a;
+}
+
+.timeline-strip span {
+  display: block;
+  width: 100%;
+  height: 22px;
+  image-rendering: pixelated;
+}
+
+.timeline-strip small {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+}
+
+.sprite-controls {
+  display: grid;
+  grid-template-columns: 26px 26px minmax(120px, 1.5fr) repeat(4, minmax(58px, 0.6fr)) auto;
+  gap: 6px;
+  align-items: end;
+}
+
+.sprite-check {
+  grid-template-columns: auto auto;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  color: #cbd5e1;
+  background: #101721;
+  border: 1px solid #334155;
+  border-radius: 5px;
+}
+
+.sprite-check input {
+  width: auto;
+  height: auto;
 }
 
 .component-editor {

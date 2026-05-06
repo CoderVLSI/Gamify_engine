@@ -69,5 +69,23 @@ describe("editor store transform tools", () => {
     expect(store.getState().project.assets.at(-1)).toMatchObject({ kind: "spritesheet", name: "Hero Attack" });
     expect(store.getState().project.animationClips).toHaveLength(initialClips + 1);
     expect(store.getState().project.animationClips.at(-1)).toMatchObject({ name: "Hero Attack", frameCount: 6, fps: 14 });
+    expect(store.getState().selectedAnimationClipId).toBe(store.getState().project.animationClips.at(-1)?.id);
+  });
+
+  it("updates selected project assets and animation clips", () => {
+    const store = createEditorStore();
+
+    store.getState().updateAsset("asset-hero-run", { name: "Hero Run XL" });
+    store.getState().updateAnimationClip("clip-hero-run", { fps: 18, frameCount: 10 });
+    store.getState().selectAsset("asset-hero-run");
+    store.getState().selectAnimationClip("clip-hero-run");
+
+    expect(store.getState().project.assets.find((asset) => asset.id === "asset-hero-run")).toMatchObject({ name: "Hero Run XL" });
+    expect(store.getState().project.animationClips.find((clip) => clip.id === "clip-hero-run")).toMatchObject({
+      fps: 18,
+      frameCount: 10
+    });
+    expect(store.getState().selectedAssetId).toBe("asset-hero-run");
+    expect(store.getState().selectedAnimationClipId).toBe("clip-hero-run");
   });
 });
