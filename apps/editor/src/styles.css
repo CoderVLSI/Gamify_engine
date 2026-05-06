@@ -45,6 +45,20 @@ select {
   opacity: 0.45;
 }
 
+.toolbar button.active {
+  background: #475569;
+  border-color: #93c5fd;
+}
+
+.toolbar-segment {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #343a46;
+  border-radius: 7px;
+  background: #171b22;
+}
+
 .brand {
   margin-right: 12px;
 }

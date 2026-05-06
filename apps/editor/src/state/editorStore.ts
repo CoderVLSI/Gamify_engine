@@ -12,14 +12,20 @@ import {
   type Vec3
 } from "@gamify/scene-core";
 import { create } from "zustand";
+import { createStore } from "zustand/vanilla";
+import type { StateCreator } from "zustand/vanilla";
+
+export type TransformTool = "move" | "rotate" | "scale";
 
 type EditorStore = {
   project: GamifyProject;
   scene: Scene;
   selectedEntityId: string | null;
+  activeTransformTool: TransformTool;
   setProject: (project: GamifyProject) => void;
   setScene: (scene: Scene) => void;
   selectEntity: (entityId: string | null) => void;
+  setActiveTransformTool: (tool: TransformTool) => void;
   createEntity: (name?: string) => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
   addComponent: (entityId: string, component: SceneComponent) => void;
@@ -27,13 +33,15 @@ type EditorStore = {
   serializeScene: () => string;
 };
 
-export const useEditorStore = create<EditorStore>((set, get) => ({
+const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
   project: createDefaultProject("Gamify Sample"),
   scene: createDefaultScene("Main"),
   selectedEntityId: "cube",
+  activeTransformTool: "move",
   setProject: (project) => set({ project }),
   setScene: (scene) => set({ scene, selectedEntityId: scene.entities[0]?.id ?? null }),
   selectEntity: (selectedEntityId) => set({ selectedEntityId }),
+  setActiveTransformTool: (activeTransformTool) => set({ activeTransformTool }),
   createEntity: (name = "Entity") =>
     set((state) => {
       const scene = createEntity(state.scene, { name });
@@ -44,4 +52,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   updateComponent: (entityId, componentId, patch) =>
     set((state) => ({ scene: updateComponent(state.scene, entityId, componentId, patch) })),
   serializeScene: () => toPrettyJson(get().scene)
-}));
+});
+
+export function createEditorStore() {
+  return createStore<EditorStore>(editorStoreInitializer);
+}
+
+export const useEditorStore = create<EditorStore>()(editorStoreInitializer);

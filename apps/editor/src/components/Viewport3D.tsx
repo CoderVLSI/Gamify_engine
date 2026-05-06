@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { useEditorStore } from "../state/editorStore";
 
 export function Viewport3D() {
@@ -8,7 +9,9 @@ export function Viewport3D() {
   const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const sceneData = useEditorStore((state) => state.scene);
   const selectedEntityId = useEditorStore((state) => state.selectedEntityId);
+  const activeTransformTool = useEditorStore((state) => state.activeTransformTool);
   const selectEntity = useEditorStore((state) => state.selectEntity);
+  const setTransform = useEditorStore((state) => state.setTransform);
 
   useEffect(() => {
     const canvasHost = canvasHostRef.current;
@@ -48,6 +51,7 @@ export function Viewport3D() {
     scene.add(new THREE.AmbientLight("#ffffff", 0.35));
 
     const pickables: THREE.Object3D[] = [];
+    const meshesByEntityId = new Map<string, THREE.Mesh>();
     for (const entity of sceneData.entities) {
       const transform = entity.components.find((component) => component.type === "Transform");
       const meshRenderer = entity.components.find((component) => component.type === "MeshRenderer3D");
@@ -71,7 +75,29 @@ export function Viewport3D() {
       mesh.scale.set(transform.scale.x, transform.scale.y, transform.scale.z);
       scene.add(mesh);
       pickables.push(mesh);
+      meshesByEntityId.set(entity.id, mesh);
     }
+
+    const transformControls = new TransformControls(camera, renderer.domElement);
+    transformControls.setMode(activeTransformTool === "move" ? "translate" : activeTransformTool);
+    transformControls.setSize(0.85);
+    const selectedMesh = selectedEntityId ? meshesByEntityId.get(selectedEntityId) : undefined;
+    if (selectedMesh) {
+      transformControls.attach(selectedMesh);
+      scene.add(transformControls.getHelper());
+    }
+    transformControls.addEventListener("dragging-changed", (event) => {
+      controls.enabled = !event.value;
+    });
+    transformControls.addEventListener("objectChange", () => {
+      const object = transformControls.object;
+      if (!object?.name) return;
+      setTransform(object.name, {
+        position: { x: object.position.x, y: object.position.y, z: object.position.z },
+        rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z },
+        scale: { x: object.scale.x, y: object.scale.y, z: object.scale.z }
+      });
+    });
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -128,6 +154,8 @@ export function Viewport3D() {
       renderer.domElement.removeEventListener("pointerup", handlePointerUp);
       renderer.domElement.removeEventListener("contextmenu", preventContextMenu);
       controls.dispose();
+      transformControls.detach();
+      transformControls.dispose();
       renderer.dispose();
       for (const pickable of pickables) {
         if (pickable instanceof THREE.Mesh) {
@@ -141,7 +169,7 @@ export function Viewport3D() {
       }
       container.removeChild(renderer.domElement);
     };
-  }, [sceneData, selectedEntityId, selectEntity]);
+  }, [activeTransformTool, sceneData, selectedEntityId, selectEntity, setTransform]);
 
   return (
     <div className="viewport-3d" ref={hostRef}>
@@ -151,6 +179,7 @@ export function Viewport3D() {
         <span>Right/middle drag pan</span>
         <span>Wheel zoom</span>
         <span>Click select</span>
+        <span>{activeTransformTool} gizmo</span>
       </div>
     </div>
   );

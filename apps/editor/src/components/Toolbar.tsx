@@ -1,10 +1,13 @@
-import { Box, Disc3, Music, Play, Save, Sparkles, Volume2 } from "lucide-react";
-import { useEditorStore } from "../state/editorStore";
+import { Box, Disc3, Expand, Move3D, Music, Play, Rotate3D, Save, Sparkles, Volume2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { type TransformTool, useEditorStore } from "../state/editorStore";
 
 export function Toolbar() {
   const createEntity = useEditorStore((state) => state.createEntity);
   const serializeScene = useEditorStore((state) => state.serializeScene);
   const selectedEntityId = useEditorStore((state) => state.selectedEntityId);
+  const activeTransformTool = useEditorStore((state) => state.activeTransformTool);
+  const setActiveTransformTool = useEditorStore((state) => state.setActiveTransformTool);
   const addComponent = useEditorStore((state) => state.addComponent);
 
   function downloadScene() {
@@ -23,6 +26,16 @@ export function Toolbar() {
       <button title="Add entity" onClick={() => createEntity("Entity")}>
         <Box size={16} /> Add
       </button>
+      <div className="toolbar-segment" aria-label="Transform tools">
+        <ToolButton active={activeTransformTool === "move"} icon={<Move3D size={16} />} label="Move" onClick={() => setActiveTransformTool("move")} />
+        <ToolButton
+          active={activeTransformTool === "rotate"}
+          icon={<Rotate3D size={16} />}
+          label="Rotate"
+          onClick={() => setActiveTransformTool("rotate")}
+        />
+        <ToolButton active={activeTransformTool === "scale"} icon={<Expand size={16} />} label="Scale" onClick={() => setActiveTransformTool("scale")} />
+      </div>
       <button
         disabled={!selectedEntityId}
         title="Add sprite animation"
@@ -109,5 +122,23 @@ export function Toolbar() {
         <Play size={16} /> Play
       </button>
     </header>
+  );
+}
+
+function ToolButton({
+  active,
+  icon,
+  label,
+  onClick
+}: {
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button className={active ? "active" : ""} title={`${label} tool`} onClick={onClick}>
+      {icon} {label}
+    </button>
   );
 }
