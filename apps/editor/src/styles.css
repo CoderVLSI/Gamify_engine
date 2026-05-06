@@ -206,8 +206,9 @@ select {
 
 .editor-grid {
   display: grid;
-  grid-template-columns: 300px minmax(420px, 1fr) 360px;
-  grid-template-rows: minmax(0, 1fr) 420px;
+  position: relative;
+  grid-template-columns: var(--left-panel-width, 300px) minmax(420px, 1fr) var(--right-panel-width, 360px);
+  grid-template-rows: minmax(0, 1fr) var(--bottom-panel-height, 420px);
   min-height: 0;
 }
 
@@ -224,13 +225,13 @@ select {
 
 .hierarchy {
   grid-row: 1 / span 2;
-  border-right: 1px solid #343a46;
+  border-right: 1px solid rgb(148 163 184 / 14%);
 }
 
 .inspector {
   grid-column: 3;
   grid-row: 1 / span 2;
-  border-left: 1px solid #343a46;
+  border-left: 1px solid rgb(148 163 184 / 14%);
 }
 
 .project-panel {
@@ -238,7 +239,7 @@ select {
   grid-row: 2;
   display: grid;
   grid-template-rows: auto auto 88px auto minmax(260px, 1fr);
-  border-top: 1px solid #343a46;
+  border-top: 1px solid rgb(148 163 184 / 14%);
 }
 
 .viewport-placeholder,
@@ -248,8 +249,68 @@ select {
   min-height: 0;
   background: radial-gradient(circle at center, #1c222b 0, #101319 70%);
   color: #9ca3af;
-  border-left: 1px solid #0b0e13;
-  border-right: 1px solid #0b0e13;
+  border-left: 1px solid rgb(0 0 0 / 28%);
+  border-right: 1px solid rgb(0 0 0 / 28%);
+}
+
+.resize-handle {
+  position: absolute;
+  z-index: 30;
+  background: transparent;
+  touch-action: none;
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  background: #4fd1c5;
+  box-shadow: 0 0 18px rgb(79 209 197 / 45%);
+  transition: opacity 140ms ease;
+}
+
+.resize-handle:hover::after,
+.resize-handle:active::after {
+  opacity: 1;
+}
+
+.resize-handle-left {
+  top: 0;
+  bottom: 0;
+  left: calc(var(--left-panel-width, 300px) - 4px);
+  width: 8px;
+  cursor: col-resize;
+}
+
+.resize-handle-left::after,
+.resize-handle-right::after {
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 2px;
+}
+
+.resize-handle-right {
+  top: 0;
+  right: calc(var(--right-panel-width, 360px) - 4px);
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+}
+
+.resize-handle-bottom {
+  right: var(--right-panel-width, 360px);
+  bottom: calc(var(--bottom-panel-height, 420px) - 4px);
+  left: var(--left-panel-width, 300px);
+  height: 8px;
+  cursor: row-resize;
+}
+
+.resize-handle-bottom::after {
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  height: 2px;
 }
 
 .viewport-3d {
