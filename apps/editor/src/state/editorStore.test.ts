@@ -26,4 +26,15 @@ describe("editor store transform tools", () => {
     expect(store.getState().scene.entities.some((entity) => entity.id === "cube")).toBe(false);
     expect(store.getState().selectedEntityId).toBeNull();
   });
+
+  it("duplicates the selected entity and selects the duplicate", () => {
+    const store = createEditorStore();
+
+    store.getState().selectEntity("cube");
+    store.getState().duplicateSelectedEntity();
+
+    const duplicate = store.getState().scene.entities.find((entity) => entity.name === "Cube Copy");
+    expect(duplicate).toBeDefined();
+    expect(store.getState().selectedEntityId).toBe(duplicate?.id);
+  });
 });

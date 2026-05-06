@@ -5,6 +5,7 @@ import {
   createEntity,
   createPrimitiveEntity,
   deleteEntity,
+  duplicateEntity,
   setTransform,
   toPrettyJson,
   updateComponent,
@@ -32,6 +33,7 @@ type EditorStore = {
   createEntity: (name?: string) => void;
   createPrimitive: (primitive: MeshRenderer3DComponent["primitive"]) => void;
   deleteSelectedEntity: () => void;
+  duplicateSelectedEntity: () => void;
   setTransform: (entityId: string, patch: { position?: Partial<Vec3>; rotation?: Partial<Vec3>; scale?: Partial<Vec3> }) => void;
   addComponent: (entityId: string, component: SceneComponent) => void;
   updateComponent: (entityId: string, componentId: string, patch: Record<string, unknown>) => void;
@@ -61,6 +63,12 @@ const editorStoreInitializer: StateCreator<EditorStore> = (set, get) => ({
     set((state) => {
       if (!state.selectedEntityId) return state;
       return { scene: deleteEntity(state.scene, state.selectedEntityId), selectedEntityId: null };
+    }),
+  duplicateSelectedEntity: () =>
+    set((state) => {
+      if (!state.selectedEntityId) return state;
+      const scene = duplicateEntity(state.scene, state.selectedEntityId);
+      return { scene, selectedEntityId: scene.entities.at(-1)?.id ?? null };
     }),
   setTransform: (entityId, patch) => set((state) => ({ scene: setTransform(state.scene, entityId, patch) })),
   addComponent: (entityId, component) => set((state) => ({ scene: addComponent(state.scene, entityId, component) })),

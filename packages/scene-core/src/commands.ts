@@ -31,6 +31,27 @@ export function createPrimitiveEntity(
   return { ...scene, entities: [...scene.entities, entity] };
 }
 
+export function duplicateEntity(scene: Scene, entityId: string, input: Partial<Entity> = {}): Scene {
+  const entity = scene.entities.find((candidate) => candidate.id === entityId);
+  if (!entity) throw new Error(`Entity not found: ${entityId}`);
+
+  const duplicateId = input.id ?? crypto.randomUUID();
+  const duplicate: Entity = {
+    ...entity,
+    ...input,
+    id: duplicateId,
+    name: input.name ?? `${entity.name} Copy`,
+    parentId: entity.parentId,
+    children: [],
+    components: entity.components.map((component) => ({
+      ...component,
+      id: `${component.id}-${duplicateId}`
+    }))
+  };
+
+  return { ...scene, entities: [...scene.entities, duplicate] };
+}
+
 export function deleteEntity(scene: Scene, entityId: string): Scene {
   return {
     ...scene,

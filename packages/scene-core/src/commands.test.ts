@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addComponent, createDefaultScene, createEntity, createPrimitiveEntity, setTransform, updateComponent } from "./index";
+import { addComponent, createDefaultScene, createEntity, createPrimitiveEntity, duplicateEntity, setTransform, updateComponent } from "./index";
 
 describe("scene commands", () => {
   it("creates an entity with a transform", () => {
@@ -53,5 +53,16 @@ describe("scene commands", () => {
 
     expect(entity?.components).toContainEqual(expect.objectContaining({ type: "Transform" }));
     expect(entity?.components).toContainEqual(expect.objectContaining({ type: "MeshRenderer3D", primitive: "sphere" }));
+  });
+
+  it("duplicates entities with new ids and copied components", () => {
+    const scene = createDefaultScene("Main");
+    const updated = duplicateEntity(scene, "cube", { id: "cube-copy" });
+    const duplicate = updated.entities.find((entity) => entity.id === "cube-copy");
+
+    expect(duplicate?.name).toBe("Cube Copy");
+    expect(duplicate?.components).toContainEqual(expect.objectContaining({ type: "Transform" }));
+    expect(duplicate?.components).toContainEqual(expect.objectContaining({ type: "MeshRenderer3D", primitive: "cube" }));
+    expect(duplicate?.components.map((component) => component.id)).not.toContain("mesh-renderer");
   });
 });
